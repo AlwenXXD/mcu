@@ -1,0 +1,6 @@
+build
+tests
+out
+.idea
+.bsp
+*.vcd
