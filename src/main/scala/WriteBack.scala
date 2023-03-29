@@ -47,6 +47,7 @@ class WriteBack extends Module{
   val is_halt = WireInit(false.B)
   BoringUtils.addSource(is_halt, "is_halt")
 
+
   val is_error = WireInit(false.B)
   BoringUtils.addSource(is_error, "is_error")  
 
@@ -186,5 +187,11 @@ class WriteBack extends Module{
   io.csr_write_info.bits.csr_idx:=io.writeback_info.bits.csr_idx
   io.csr_write_info.bits.csr_data:=io.writeback_info.bits.csr_wdata
   io.csr_write_info.bits.csr_wen:=io.writeback_info.bits.csr_wen
+
+  val val_a0 = WireInit(0.U(32.W))
+  BoringUtils.addSink(val_a0, "val_a0")
+  when(io.writeback_info.valid && !is_except && !is_intr && (io.writeback_info.bits.inst === "h0000_007b".U(32.W))) {
+    printf("%c", val_a0(7,0))
+  }
 
 }
