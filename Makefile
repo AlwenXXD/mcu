@@ -12,6 +12,7 @@ sim-verilog: ${SIMTOP_FILE}
 
 ${EMU_FILE}: ${SIMTOP_FILE} ${EMU_SRCS}
 	verilator --cc --exe --build --trace --Mdir build/obj_dir --top SimTop \
+	-CFLAGS "-I/usr/include/SDL2" -LDFLAGS " -lSDL2 -lSDL2_image" \
 	-o ${EMU_FILE} -j 4 ${EMU_SRCS} ${SIMTOP_FILE} ${BUILD_DIR}/ram.v
 emu: ${EMU_FILE}
 
