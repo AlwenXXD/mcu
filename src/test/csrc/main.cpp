@@ -19,7 +19,7 @@
 
 #define RAM_SIZE (1024 * 1024 * 16)
 static uint64_t ram[RAM_SIZE];
-//h8800_0000
+//h8400_0000
 #define FB_BASE (RAM_SIZE/2)
 
 extern "C" uint64_t ram_read_helper(uint8_t en, uint64_t rIdx)
@@ -116,6 +116,9 @@ int main(int argc, char **argv, char **env)
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0);
     SDL_Renderer * renderer = SDL_CreateRenderer(window, -1, 0);
     SDL_Surface * image = SDL_LoadBMP("apple1.bmp");
+    SDL_Surface * originalImage = image;
+    image = SDL_ConvertSurfaceFormat(image, SDL_PIXELFORMAT_ARGB8888, 0);
+    SDL_FreeSurface(originalImage);
     SDL_Texture * texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, image->w, image->h);
     uint32_t *pixels = (uint32_t *) image->pixels;
 	uint32_t *frame_buffer = (uint32_t *) &ram[FB_BASE];
@@ -137,8 +140,8 @@ int main(int argc, char **argv, char **env)
 	}
 	dut->reset = 0;
 	uint64_t cycles = 0;
-	int update_fb = 0;
-	while (!contextp->gotFinish())
+	uint64_t update_fb = 0;
+	while (!contextp->gotFinish() && !quit)
 	{
 		update_fb++;
 		dut->clock = 0;
@@ -171,8 +174,15 @@ int main(int argc, char **argv, char **env)
 			state = 1;
 			break;
 		}
-		if (update_fb >= 500)
+		if (update_fb >= 1000000)
 		{
+		        SDL_PollEvent(&event);
+        		switch (event.type)
+        		{
+           		 case SDL_QUIT:
+               		 quit = true;
+               		 break;
+        		}
 			SDL_UpdateTexture(texture, NULL, image->pixels, image->w * sizeof(Uint32));
 			SDL_RenderCopy(renderer, texture, NULL, NULL);
 			SDL_RenderPresent(renderer);
