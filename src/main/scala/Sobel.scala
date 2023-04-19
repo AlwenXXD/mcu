@@ -19,7 +19,8 @@ class Sobel extends Module {
   io.intr_e:= end =/= 0.U
   val is_start = start =/= 0.U
 
-  val sIDLE::sWAIT::sEND::Nil = Enum(3)
+  val sIDLE::sWAIT::sDELAY::sEND::Nil = Enum(4)
+  val delay = RegInit(0.U(16.W))
   val state = RegInit(sIDLE)
   val bus_req = Reg(new CoreReq)
   val bus_resp = Reg(new CoreResp)
@@ -85,7 +86,15 @@ class Sobel extends Module {
       bus_resp.resp:=0.U
       bus_resp.id:=bus_req.id
 
-      state:=sEND
+      delay := 0.U
+      state:=sDELAY
+    }
+    is(sDELAY) {
+      when(delay === 0.U) {
+        state := sEND
+      }.otherwise{
+        delay := delay - 1.U
+      }
     }
     is(sEND){
       io.bus.resp.valid:=true.B
