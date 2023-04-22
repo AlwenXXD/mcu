@@ -68,9 +68,10 @@ class ExecutionIO extends Bundle{
   val csr_read = Flipped(new CsrReadIO())
   val decode_info = Flipped(Decoupled(new DecodeInfo()))
   val writeback_info = Valid(new WriteBackInfo())
+  val bypass = Valid(new CommitInfo())
   val redirect_info = Valid(new BjuRedirectInfo())
   val axi_rw = new CoreBundle()
-
+  val flush = Input(Bool())
 }
 
 class Execution extends Module {
@@ -89,32 +90,22 @@ class Execution extends Module {
   io.decode_info.ready:=false.B
   switch(state){
     is(sIDLE){
-      when(io.decode_info.valid){
-        dispatch_info.uop          :=io.decode_info.bits.uop
-        dispatch_info.need_imm     :=io.decode_info.bits.need_imm
-        dispatch_info.inst_addr    :=io.decode_info.bits.inst_addr
-        dispatch_info.inst   :=io.decode_info.bits.inst
-        dispatch_info.des_addr    :=io.decode_info.bits.des_addr
-        dispatch_info.op1_data     :=io.reg_read.rs1_data
-        dispatch_info.op2_data     :=io.reg_read.rs2_data
-        dispatch_info.imm_data     :=io.decode_info.bits.imm_data
-        dispatch_info.csr_idx     :=io.decode_info.bits.csr_idx
-        dispatch_info.csr_data :=io.csr_read.csr_data
-        dispatch_info.unit_sel     :=io.decode_info.bits.unit_sel
-        dispatch_info.except_type     :=io.decode_info.bits.except_type
-        dispatch_info_valid := true.B
-        state:=sWAIT
-      }
-    }
-    is(sWAIT){
       when(all_ready){
-        dispatch_info_valid:=false.B
-        state:=sEND
+        io.decode_info.ready:=true.B
+        dispatch_info.uop := io.decode_info.bits.uop
+        dispatch_info.need_imm := io.decode_info.bits.need_imm
+        dispatch_info.inst_addr := io.decode_info.bits.inst_addr
+        dispatch_info.inst := io.decode_info.bits.inst
+        dispatch_info.des_addr := io.decode_info.bits.des_addr
+        dispatch_info.op1_data := io.reg_read.rs1_data
+        dispatch_info.op2_data := io.reg_read.rs2_data
+        dispatch_info.imm_data := io.decode_info.bits.imm_data
+        dispatch_info.csr_idx := io.decode_info.bits.csr_idx
+        dispatch_info.csr_data := io.csr_read.csr_data
+        dispatch_info.unit_sel := io.decode_info.bits.unit_sel
+        dispatch_info.except_type := io.decode_info.bits.except_type
+        dispatch_info_valid := io.decode_info.valid
       }
-    }
-    is(sEND){
-      io.decode_info.ready:=true.B
-      state:=sIDLE
     }
   }
 
@@ -136,6 +127,9 @@ class Execution extends Module {
   writeback_info.except_type:=dispatch_info.except_type
   writeback_info.mem_addr:=0.U
 
+  io.bypass.valid := false.B
+  io.bypass.bits.commit_addr := 0.U
+  io.bypass.bits.commit_data := 0.U
 
 
   val alu = Module(new Alu)
@@ -164,23 +158,38 @@ class Execution extends Module {
     is(UnitSel.is_Alu){
       writeback_info := alu.io.wb_info.bits
       writeback_info_valid := alu.io.wb_info.valid
+      io.bypass.valid := alu.io.wb_info.valid
+      io.bypass.bits.commit_addr := dispatch_info.des_addr
+      io.bypass.bits.commit_data := alu.io.wb_info.bits.data
     }
     is(UnitSel.is_Bju){
       writeback_info := bju.io.wb_info.bits
       writeback_info_valid := bju.io.wb_info.valid
+      io.bypass.valid := bju.io.wb_info.valid
+      io.bypass.bits.commit_addr := dispatch_info.des_addr
+      io.bypass.bits.commit_data := bju.io.wb_info.bits.data
     }
     is(UnitSel.is_Lsu){
       writeback_info := lsu.io.wb_info.bits
       writeback_info_valid := lsu.io.wb_info.valid
+      io.bypass.valid := lsu.io.wb_info.valid
+      io.bypass.bits.commit_addr := dispatch_info.des_addr
+      io.bypass.bits.commit_data := lsu.io.wb_info.bits.data
     }
     is(UnitSel.is_Mdu){
       writeback_info := mdu.io.wb_info.bits
       writeback_info_valid := mdu.io.wb_info.valid
+      io.bypass.valid := mdu.io.wb_info.valid
+      io.bypass.bits.commit_addr := dispatch_info.des_addr
+      io.bypass.bits.commit_data := mdu.io.wb_info.bits.data
     }
   }
 
-
-
+//TODO MDU flush
+  when(io.flush) {
+    writeback_info_valid := false.B
+    dispatch_info_valid := false.B
+  }
 
   when(reset.asBool){
     dispatch_info.init()

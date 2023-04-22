@@ -128,7 +128,7 @@ class WriteBack extends Module{
       }.otherwise{
         nxt_pc:=nxt_pc_trap_m
       }
-      is_error := true.B
+      is_error := io.writeback_info.valid
     }
     is(ExceptSel.is_halt) {
       is_halt := true.B

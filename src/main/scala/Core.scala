@@ -10,18 +10,19 @@ class Core extends Module {
   })
 
   val fetch = Module(new InstFetch)
+  val icache = Module(new ICache)
   val decode = Module(new Decode)
   val rf = Module(new RegFile)
   val execution = Module(new Execution)
   val writeback = Module(new WriteBack)
   val csr = Module(new Csr)
 
-  fetch.io.inst<>decode.io.inst
-  fetch.io.pc<>decode.io.pc
-  fetch.io.axi_rw<>io.irw
+  fetch.io.icache_req<>icache.io.icache_req
   fetch.io.bju_redirect<>execution.io.redirect_info
   fetch.io.except_redirect<>writeback.io.redirect_info
 
+  icache.io.core_rw<>io.irw
+  icache.io.icache_resp<>decode.io.icache_resp
 
   decode.io.decode_info<>execution.io.decode_info
 
@@ -29,6 +30,7 @@ class Core extends Module {
   execution.io.writeback_info<>writeback.io.writeback_info
   execution.io.axi_rw<>io.drw
   execution.io.csr_read<>csr.io.csr_read
+  execution.io.bypass<>rf.io.bypass
 
   writeback.io.commit_info<>rf.io.commit_info
   writeback.io.csr_info<>csr.io.csr_info
@@ -38,9 +40,11 @@ class Core extends Module {
 
   csr.io.instr_info<>io.instr_info
 
-
   csr.io.vsr_info<>decode.io.vsr_info
   csr.io.current_privilege<>decode.io.cur_priv
+
+  icache.io.flush := (execution.io.redirect_info.valid && execution.io.redirect_info.bits.is_taken) || writeback.io.redirect_info.valid
+  execution.io.flush := writeback.io.redirect_info.valid
 
 
 }

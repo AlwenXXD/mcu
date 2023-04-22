@@ -17,6 +17,7 @@ class CommitInfo extends Bundle{
 class RegFileIO extends Bundle{
   val reg_read = new RegReadIO
   val commit_info = Flipped(Valid(new CommitInfo))
+  val bypass = Flipped(Valid(new CommitInfo))
 }
 
 class RegFile extends Module {
@@ -28,8 +29,26 @@ class RegFile extends Module {
     rf(io.commit_info.bits.commit_addr) := io.commit_info.bits.commit_data
   }
 
-  io.reg_read.rs1_data := Mux(io.reg_read.rs1_addr =/= 0.U, rf(io.reg_read.rs1_addr), 0.U)
-  io.reg_read.rs2_data := Mux(io.reg_read.rs2_addr =/= 0.U, rf(io.reg_read.rs2_addr), 0.U)
+  when(io.reg_read.rs1_addr === 0.U) {
+    io.reg_read.rs1_data := 0.U
+  }.elsewhen(io.bypass.valid && io.bypass.bits.commit_addr === io.reg_read.rs1_addr){
+    io.reg_read.rs1_data := io.bypass.bits.commit_data
+  }.elsewhen(io.commit_info.valid && io.commit_info.bits.commit_addr === io.reg_read.rs1_addr){
+    io.reg_read.rs1_data := io.commit_info.bits.commit_data
+  }.otherwise{
+    io.reg_read.rs1_data := rf(io.reg_read.rs1_addr)
+  }
+
+  when(io.reg_read.rs2_addr === 0.U) {
+    io.reg_read.rs2_data := 0.U
+  }.elsewhen(io.bypass.valid && io.bypass.bits.commit_addr === io.reg_read.rs2_addr) {
+    io.reg_read.rs2_data := io.bypass.bits.commit_data
+  }.elsewhen(io.commit_info.valid && io.commit_info.bits.commit_addr === io.reg_read.rs2_addr) {
+    io.reg_read.rs2_data := io.commit_info.bits.commit_data
+  }.otherwise {
+    io.reg_read.rs2_data := rf(io.reg_read.rs2_addr)
+  }
+
   val val_a0 = WireInit(rf(10))
   BoringUtils.addSource(val_a0, "val_a0")
 }
