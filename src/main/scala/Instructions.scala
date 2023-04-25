@@ -114,17 +114,6 @@ object Instructions {
     SH         -> List(uOP.Lsu_SH     , UnitSel.is_Lsu,  ImmSel.is_S,     OpSel.is_rs1,  OpSel.is_rs2,  OpSel.is_null,ExceptSel.is_null),
     SW         -> List(uOP.Lsu_SW     , UnitSel.is_Lsu,  ImmSel.is_S,     OpSel.is_rs1,  OpSel.is_rs2,  OpSel.is_null,ExceptSel.is_null),
 
-
-    MUL        -> List(uOP.Mdu_MUL    , UnitSel.is_Mdu,  ImmSel.no_imm,   OpSel.is_rs1,  OpSel.is_rs2,  OpSel.is_rd,ExceptSel.is_null),
-    MULH       -> List(uOP.Mdu_MULH   , UnitSel.is_Mdu,  ImmSel.no_imm,   OpSel.is_rs1,  OpSel.is_rs2,  OpSel.is_rd,ExceptSel.is_null),
-    MULHSU     -> List(uOP.Mdu_MULHSU , UnitSel.is_Mdu,  ImmSel.no_imm,   OpSel.is_rs1,  OpSel.is_rs2,  OpSel.is_rd,ExceptSel.is_null),
-    MULHU      -> List(uOP.Mdu_MULHU  , UnitSel.is_Mdu,  ImmSel.no_imm,   OpSel.is_rs1,  OpSel.is_rs2,  OpSel.is_rd,ExceptSel.is_null),
-    DIV        -> List(uOP.Mdu_DIV    , UnitSel.is_Mdu,  ImmSel.no_imm,   OpSel.is_rs1,  OpSel.is_rs2,  OpSel.is_rd,ExceptSel.is_null),
-    DIVU       -> List(uOP.Mdu_DIVU   , UnitSel.is_Mdu,  ImmSel.no_imm,   OpSel.is_rs1,  OpSel.is_rs2,  OpSel.is_rd,ExceptSel.is_null),
-    REM        -> List(uOP.Mdu_REM    , UnitSel.is_Mdu,  ImmSel.no_imm,   OpSel.is_rs1,  OpSel.is_rs2,  OpSel.is_rd,ExceptSel.is_null),
-    REMU       -> List(uOP.Mdu_REMU   , UnitSel.is_Mdu,  ImmSel.no_imm,   OpSel.is_rs1,  OpSel.is_rs2,  OpSel.is_rd,ExceptSel.is_null),
-
-
     CSRRW      -> List(uOP.Csr_CSRRW  , UnitSel.is_Alu,  ImmSel.no_imm,   OpSel.is_rs1,  OpSel.is_csr,  OpSel.is_rd,ExceptSel.decode_csr),
     CSRRS      -> List(uOP.Csr_CSRRS  , UnitSel.is_Alu,  ImmSel.no_imm,   OpSel.is_rs1,  OpSel.is_csr,  OpSel.is_rd,ExceptSel.decode_csr),
     CSRRC      -> List(uOP.Csr_CSRRC  , UnitSel.is_Alu,  ImmSel.no_imm,   OpSel.is_rs1,  OpSel.is_csr,  OpSel.is_rd,ExceptSel.decode_csr),

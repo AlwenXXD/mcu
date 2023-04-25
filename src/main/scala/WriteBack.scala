@@ -134,13 +134,11 @@ class WriteBack extends Module{
       is_halt := true.B
     }
   }
-  val is_st_to_wb = WireInit(false.B)
-  BoringUtils.addSink(is_st_to_wb,"is_st")
 
-  val has_mei =  io.csr_info.en_meip && !is_st_to_wb
-  val has_mti =  io.csr_info.en_mtip && !is_st_to_wb
-  val has_sti =  io.csr_info.en_stip && !is_st_to_wb
-  val has_ssi =  io.csr_info.en_ssip && !is_st_to_wb
+  val has_mei =  io.csr_info.en_meip && !io.writeback_info.bits.atomic
+  val has_mti =  io.csr_info.en_mtip && !io.writeback_info.bits.atomic
+  val has_sti =  io.csr_info.en_stip && !io.writeback_info.bits.atomic
+  val has_ssi =  io.csr_info.en_ssip && !io.writeback_info.bits.atomic
   when(has_mei){
     nxt_cause:=Cat(1.U(1.W),11.U(31.W))
     nxt_pc:=nxt_pc_trap_m

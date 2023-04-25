@@ -40,6 +40,7 @@ class WriteBackInfo extends Bundle{
   val csr_wdata   = UInt(32.W)
   val except_type = ExceptSel()
   val mem_addr = UInt(32.W)
+  val atomic = Bool()
   def init(): Unit ={
     inst_addr   := 0.U
     inst        := 0.U
@@ -49,7 +50,8 @@ class WriteBackInfo extends Bundle{
     csr_idx     := 0.U
     csr_wdata    := 0.U
     except_type := ExceptSel.is_null
-    mem_addr :=0.U
+    mem_addr := 0.U
+    atomic := 0.U
   }
 }
 
@@ -146,12 +148,8 @@ class Execution extends Module {
   lsu.io.dispatch_info.valid:=dispatch_info_valid && dispatch_info.unit_sel === UnitSel.is_Lsu
   lsu.io.core_rw<>io.axi_rw
 
-  val mdu = Module(new Mdu)
-  mdu.io.dispatch_info.bits:=dispatch_info
-  mdu.io.dispatch_info.valid:=dispatch_info_valid && dispatch_info.unit_sel === UnitSel.is_Mdu
 
-
-  val unit = alu.io::bju.io::lsu.io::mdu.io::Nil
+  val unit = alu.io::bju.io::lsu.io::Nil
 
   all_ready := unit.map(i=>i.dispatch_info.ready).reduce(_ & _)
   switch(dispatch_info.unit_sel){
@@ -175,13 +173,6 @@ class Execution extends Module {
       io.bypass.valid := lsu.io.wb_info.valid
       io.bypass.bits.commit_addr := dispatch_info.des_addr
       io.bypass.bits.commit_data := lsu.io.wb_info.bits.data
-    }
-    is(UnitSel.is_Mdu){
-      writeback_info := mdu.io.wb_info.bits
-      writeback_info_valid := mdu.io.wb_info.valid
-      io.bypass.valid := mdu.io.wb_info.valid
-      io.bypass.bits.commit_addr := dispatch_info.des_addr
-      io.bypass.bits.commit_data := mdu.io.wb_info.bits.data
     }
   }
 
