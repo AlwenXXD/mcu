@@ -87,28 +87,22 @@ class Execution extends Module {
 
   val all_ready = WireInit(false.B)
 
-  val sIDLE::sWAIT::sEND::Nil = Enum(3)
-  val state = RegInit(sIDLE)
   io.decode_info.ready:=false.B
-  switch(state){
-    is(sIDLE){
-      when(all_ready){
-        io.decode_info.ready:=true.B
-        dispatch_info.uop := io.decode_info.bits.uop
-        dispatch_info.need_imm := io.decode_info.bits.need_imm
-        dispatch_info.inst_addr := io.decode_info.bits.inst_addr
-        dispatch_info.inst := io.decode_info.bits.inst
-        dispatch_info.des_addr := io.decode_info.bits.des_addr
-        dispatch_info.op1_data := io.reg_read.rs1_data
-        dispatch_info.op2_data := io.reg_read.rs2_data
-        dispatch_info.imm_data := io.decode_info.bits.imm_data
-        dispatch_info.csr_idx := io.decode_info.bits.csr_idx
-        dispatch_info.csr_data := io.csr_read.csr_data
-        dispatch_info.unit_sel := io.decode_info.bits.unit_sel
-        dispatch_info.except_type := io.decode_info.bits.except_type
-        dispatch_info_valid := io.decode_info.valid
-      }
-    }
+  when(all_ready) {
+    io.decode_info.ready := true.B
+    dispatch_info.uop := io.decode_info.bits.uop
+    dispatch_info.need_imm := io.decode_info.bits.need_imm
+    dispatch_info.inst_addr := io.decode_info.bits.inst_addr
+    dispatch_info.inst := io.decode_info.bits.inst
+    dispatch_info.des_addr := io.decode_info.bits.des_addr
+    dispatch_info.op1_data := io.reg_read.rs1_data
+    dispatch_info.op2_data := io.reg_read.rs2_data
+    dispatch_info.imm_data := io.decode_info.bits.imm_data
+    dispatch_info.csr_idx := io.decode_info.bits.csr_idx
+    dispatch_info.csr_data := io.csr_read.csr_data
+    dispatch_info.unit_sel := io.decode_info.bits.unit_sel
+    dispatch_info.except_type := io.decode_info.bits.except_type
+    dispatch_info_valid := io.decode_info.valid
   }
 
 

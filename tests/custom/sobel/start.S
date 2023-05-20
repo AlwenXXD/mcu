@@ -13,7 +13,6 @@ _start:
   mv t0, zero
   mv s0, zero
   jal main
-_loop:
-  j _loop
-
+  nop
+  .4byte 0x6b
 

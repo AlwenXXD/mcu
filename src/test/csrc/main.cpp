@@ -62,16 +62,18 @@ void gray(int w, int h, int* matrix) {
 static char *img_file = NULL;
 static bool trace_on = false;
 static bool sdl_on = false;
+static bool info_on = false;
 static int parse_args(int argc, char *argv[])
 {
 	const struct option table[] = {
 		{"help", no_argument, NULL, 'h'},
 		{"trace", no_argument, NULL, 't'},
 		{"sdl", no_argument, NULL, 's'},
+		{"info", no_argument, NULL, 'i'},
 		{0, 0, NULL, 0},
 	};
 	int o;
-	while ((o = getopt_long(argc, argv, "-hts", table, NULL)) != -1)
+	while ((o = getopt_long(argc, argv, "-htsi", table, NULL)) != -1)
 	{
 		switch (o)
 		{
@@ -80,6 +82,9 @@ static int parse_args(int argc, char *argv[])
 			break;
 		case 's':
         	sdl_on = true;
+        	break;
+		case 'i':
+        	info_on = true;
         	break;
 		case 1:
 			img_file = optarg;
@@ -233,6 +238,9 @@ int main(int argc, char **argv, char **env)
 			SDL_RenderPresent(renderer);
 			update_fb = 0;
 		}
+	}
+	if(info_on){
+		printf("Total %lu cycles used.\n",cycles);
 	}
 
 	if (trace_on)
