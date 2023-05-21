@@ -50,8 +50,8 @@ void sobel_edge_detector(unsigned int* image, int w , int h , unsigned int* out_
 	
 	for (i = 1; i < h - 2; i++) {
 		for (j = 1; j < w - 2; j++) {
-			gx = convolution_cpu(image,w,h, mx, i, j);
-			gy = convolution_cpu(image,w,h, my, i, j);
+			gx = convolution(image,w,h, mx, i, j);
+			gy = convolution(image,w,h, my, i, j);
 			out_image[i*w+j] = abs(gx) + abs(gy);
 		}
 	}

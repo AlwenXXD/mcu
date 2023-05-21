@@ -103,7 +103,14 @@ object Instructions {
     OR         -> List(uOP.Alu_OR     , UnitSel.is_Alu,  ImmSel.no_imm,   OpSel.is_rs1,  OpSel.is_rs2,  OpSel.is_rd,ExceptSel.is_null),
     AND        -> List(uOP.Alu_AND    , UnitSel.is_Alu,  ImmSel.no_imm,   OpSel.is_rs1,  OpSel.is_rs2,  OpSel.is_rd,ExceptSel.is_null),
 
-
+    MUL -> List(uOP.Mdu_MUL, UnitSel.is_Mdu, ImmSel.no_imm, OpSel.is_rs1, OpSel.is_rs2, OpSel.is_rd, ExceptSel.is_null),
+    MULH -> List(uOP.Mdu_MULH, UnitSel.is_Mdu, ImmSel.no_imm, OpSel.is_rs1, OpSel.is_rs2, OpSel.is_rd, ExceptSel.is_null),
+    MULHSU -> List(uOP.Mdu_MULHSU, UnitSel.is_Mdu, ImmSel.no_imm, OpSel.is_rs1, OpSel.is_rs2, OpSel.is_rd, ExceptSel.is_null),
+    MULHU -> List(uOP.Mdu_MULHU, UnitSel.is_Mdu, ImmSel.no_imm, OpSel.is_rs1, OpSel.is_rs2, OpSel.is_rd, ExceptSel.is_null),
+    DIV -> List(uOP.Mdu_DIV, UnitSel.is_Mdu, ImmSel.no_imm, OpSel.is_rs1, OpSel.is_rs2, OpSel.is_rd, ExceptSel.is_null),
+    DIVU -> List(uOP.Mdu_DIVU, UnitSel.is_Mdu, ImmSel.no_imm, OpSel.is_rs1, OpSel.is_rs2, OpSel.is_rd, ExceptSel.is_null),
+    REM -> List(uOP.Mdu_REM, UnitSel.is_Mdu, ImmSel.no_imm, OpSel.is_rs1, OpSel.is_rs2, OpSel.is_rd, ExceptSel.is_null),
+    REMU -> List(uOP.Mdu_REMU, UnitSel.is_Mdu, ImmSel.no_imm, OpSel.is_rs1, OpSel.is_rs2, OpSel.is_rd, ExceptSel.is_null),
 
     LB         -> List(uOP.Lsu_LB     , UnitSel.is_Lsu,  ImmSel.is_I,     OpSel.is_rs1,  OpSel.is_null, OpSel.is_rd,ExceptSel.is_null),
     LH         -> List(uOP.Lsu_LH     , UnitSel.is_Lsu,  ImmSel.is_I,     OpSel.is_rs1,  OpSel.is_null, OpSel.is_rd,ExceptSel.is_null),

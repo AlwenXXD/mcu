@@ -63,6 +63,7 @@ static char *img_file = NULL;
 static bool trace_on = false;
 static bool sdl_on = false;
 static bool info_on = false;
+static bool preprocess_on = false;
 static int parse_args(int argc, char *argv[])
 {
 	const struct option table[] = {
@@ -70,10 +71,11 @@ static int parse_args(int argc, char *argv[])
 		{"trace", no_argument, NULL, 't'},
 		{"sdl", no_argument, NULL, 's'},
 		{"info", no_argument, NULL, 'i'},
+		{"preprocess", no_argument, NULL, 'p'},
 		{0, 0, NULL, 0},
 	};
 	int o;
-	while ((o = getopt_long(argc, argv, "-htsi", table, NULL)) != -1)
+	while ((o = getopt_long(argc, argv, "-htsip", table, NULL)) != -1)
 	{
 		switch (o)
 		{
@@ -85,6 +87,9 @@ static int parse_args(int argc, char *argv[])
         	break;
 		case 'i':
         	info_on = true;
+        	break;
+		case 'p':
+        	preprocess_on = true;
         	break;
 		case 1:
 			img_file = optarg;
@@ -159,18 +164,20 @@ int main(int argc, char **argv, char **env)
 		pixels = (uint32_t *)image->pixels;
 		frame_buffer = (uint32_t *)&ram[FB_BASE];
 		size = image->w * image->h;
-		for (int i = 0; i < image->h; i++)
-		{
-			for (int j = 0; j < image->w; j++)
+		if(preprocess_on){
+			for (int i = 0; i < image->h; i++)
 			{
-				uint32_t col = pixels[i * image->w + j];
-				uint32_t alpha = col & 0xFF000000;
-				uint32_t red = (col & 0x00FF0000) >> 16;
-				uint32_t green = (col & 0x0000FF00) >> 8;
-				uint32_t blue = (col & 0x000000FF);
-				uint32_t gray = (red + green + blue) / 3;
-				uint32_t newColor = gray;
-				pixels[i * image->w + j] = newColor;
+				for (int j = 0; j < image->w; j++)
+				{
+					uint32_t col = pixels[i * image->w + j];
+					uint32_t alpha = col & 0xFF000000;
+					uint32_t red = (col & 0x00FF0000) >> 16;
+					uint32_t green = (col & 0x0000FF00) >> 8;
+					uint32_t blue = (col & 0x000000FF);
+					uint32_t gray = (red + green + blue) / 3;
+					uint32_t newColor = gray;
+					pixels[i * image->w + j] = newColor;
+				}
 			}
 		}
 		for (size_t i = 0; i < size; i++)
