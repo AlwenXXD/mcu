@@ -161,6 +161,7 @@ class Mdu extends Module {
   wb_info.csr_wdata:=0.U
   wb_info.except_type:=dispatch_info.except_type
   wb_info.mem_addr:=0.U
+  wb_info.atomic := false.B
 
   io.dispatch_info.ready := complete || !dispatch_valid
 

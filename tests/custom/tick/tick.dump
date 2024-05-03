@@ -1,0 +1,58 @@
+
+./tick:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+80000000 <_entry>:
+80000000:	00000297          	auipc	t0,0x0
+80000004:	03028293          	addi	t0,t0,48 # 80000030 <trap_entry>
+80000008:	30529073          	csrw	mtvec,t0
+8000000c:	00800293          	li	t0,8
+80000010:	3002a073          	csrs	mstatus,t0
+80000014:	08000293          	li	t0,128
+80000018:	3042a073          	csrs	mie,t0
+8000001c:	02004437          	lui	s0,0x2004
+80000020:	000809b7          	lui	s3,0x80
+80000024:	00098493          	mv	s1,s3
+80000028:	00942023          	sw	s1,0(s0) # 2004000 <_entry-0x7dffc000>
+
+8000002c <wait>:
+8000002c:	0000006f          	j	8000002c <wait>
+
+80000030 <trap_entry>:
+80000030:	80000337          	lui	t1,0x80000
+80000034:	00730313          	addi	t1,t1,7 # 80000007 <__global_pointer$+0xffffe797>
+80000038:	342023f3          	csrr	t2,mcause
+8000003c:	02731663          	bne	t1,t2,80000068 <fail>
+80000040:	02100513          	li	a0,33
+80000044:	0000007b          	.4byte	0x7b
+80000048:	00a00513          	li	a0,10
+8000004c:	0000007b          	.4byte	0x7b
+80000050:	0200ce37          	lui	t3,0x200c
+80000054:	ff8e0e13          	addi	t3,t3,-8 # 200bff8 <_entry-0x7dff4008>
+80000058:	000e2483          	lw	s1,0(t3)
+8000005c:	013484b3          	add	s1,s1,s3
+80000060:	00942023          	sw	s1,0(s0)
+80000064:	30200073          	mret
+
+80000068 <fail>:
+80000068:	00100513          	li	a0,1
+8000006c:	0000006b          	.4byte	0x6b
+
+Disassembly of section .riscv.attributes:
+
+00000000 <.riscv.attributes>:
+   0:	1d41                	.2byte	0x1d41
+   2:	0000                	.2byte	0x0
+   4:	7200                	.2byte	0x7200
+   6:	7369                	.2byte	0x7369
+   8:	01007663          	bgeu	zero,a6,14 <_entry-0x7fffffec>
+   c:	00000013          	nop
+  10:	7205                	.2byte	0x7205
+  12:	3376                	.2byte	0x3376
+  14:	6932                	.2byte	0x6932
+  16:	7032                	.2byte	0x7032
+  18:	0030                	.2byte	0x30
+  1a:	0108                	.2byte	0x108
+  1c:	0b0a                	.2byte	0xb0a

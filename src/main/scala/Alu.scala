@@ -88,6 +88,7 @@ class Alu extends Module {
   wb_info.except_type:=dispatch_info.except_type
   wb_info.mem_addr:=0.U
   wb_info_valid:=dispatch_valid
+  wb_info.atomic := false.B
 
 }
 

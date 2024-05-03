@@ -63,6 +63,7 @@ class Bju extends Module{
   io.wb_info.bits.des_addr:=dispatch_info.des_addr
   io.wb_info.bits.inst_addr:=dispatch_info.inst_addr
   io.wb_info.bits.inst:=dispatch_info.inst
+  io.wb_info.bits.atomic := true.B
   io.wb_info.bits.except_type:=dispatch_info.except_type
 
 

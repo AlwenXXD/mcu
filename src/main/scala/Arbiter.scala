@@ -41,9 +41,9 @@ class CoreArbiter2to1 extends Module{
 }
 class CoreArbiter2to2IO extends Bundle{
   val core_master = Vec(2,Flipped(new CoreBundle))
-  val core_slave  = Vec(2,new CoreBundle)
+  val core_slave  = Vec(3,new CoreBundle)
 }
-class CoreArbiter2to2 extends Module{
+class CoreArbiter2to3 extends Module{
   val io = IO(new CoreArbiter2to2IO)
   val master_req_sel  = WireInit(0.U)
   val slave_resp_sel  = WireInit(0.U)
@@ -65,7 +65,7 @@ class CoreArbiter2to2 extends Module{
     }
   }
 
-  for (i <- 0 until 2) {
+  for (i <- 0 until 3) {
     when(io.core_slave(i).resp.valid) {
       slave_resp_sel := i.U
     }
@@ -73,6 +73,8 @@ class CoreArbiter2to2 extends Module{
 
   when(io.core_master(master_req_sel).req.bits.addr === AddrMap.CLINT){
     io.core_master(master_req_sel).req <> io.core_slave(1).req
+  }.elsewhen(io.core_master(master_req_sel).req.bits.addr === AddrMap.SOBEL) {
+    io.core_master(master_req_sel).req <> io.core_slave(2).req
   }.otherwise{
     io.core_master(master_req_sel).req <> io.core_slave(0).req
   }

@@ -16,8 +16,7 @@ class DecodeInfo extends Bundle{
   val except_type = ExceptSel()
 }
 class DecodeIO extends Bundle{
-  val pc = Input(UInt(32.W))
-  val inst = Flipped(Decoupled(new InstInfo))
+  val icache_resp = Flipped(Decoupled(new IcacheResp))
   val decode_info = Decoupled(new DecodeInfo())
   val vsr_info = Input(new VSRInfo)
   val cur_priv = Input(UInt(2.W))
@@ -25,7 +24,7 @@ class DecodeIO extends Bundle{
 
 class Decode extends Module {
   val io = IO(new DecodeIO)
-  val inst = io.inst.bits.inst
+  val inst = io.icache_resp.bits.inst
 
   val decoder = Wire(new Decoder())
   decoder.decode(inst)
@@ -87,8 +86,8 @@ class Decode extends Module {
     }
   }
 
-  io.decode_info.bits.inst_addr:= io.pc
-  io.decode_info.bits.inst:= io.inst.bits.inst
+  io.decode_info.bits.inst_addr:= io.icache_resp.bits.addr
+  io.decode_info.bits.inst:= io.icache_resp.bits.inst
   io.decode_info.bits.op1_addr := decoder.op1_addr
   io.decode_info.bits.op2_addr := decoder.op2_addr
   io.decode_info.bits.des_addr := decoder.des_addr
@@ -97,10 +96,10 @@ class Decode extends Module {
   io.decode_info.bits.unit_sel := decoder.unit_sel
   io.decode_info.bits.need_imm := decoder.need_imm
   io.decode_info.bits.csr_idx := decoder.csr_idx
-  io.decode_info.bits.except_type:= Mux(io.inst.bits.except_type === ExceptSel.is_null,except_type,io.inst.bits.except_type)
+  io.decode_info.bits.except_type:= except_type
 
-  io.decode_info.valid := io.inst.valid
+  io.decode_info.valid := io.icache_resp.valid
 
 
-  io.inst.ready:=io.decode_info.ready
+  io.icache_resp.ready:=io.decode_info.ready
 }

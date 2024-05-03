@@ -1,0 +1,137 @@
+
+build/rv32ui-p-simple:     file format elf32-littleriscv
+
+
+Disassembly of section .text.init:
+
+80000000 <_start>:
+80000000:	0300006f          	j	80000030 <reset_vector>
+
+80000004 <trap_vector>:
+80000004:	34202f73          	csrr	t5,mcause
+80000008:	00000f13          	li	t5,0
+8000000c:	000f0463          	beqz	t5,80000014 <trap_vector+0x10>
+80000010:	000f0067          	jr	t5
+80000014:	34202f73          	csrr	t5,mcause
+80000018:	000f5463          	bgez	t5,80000020 <handle_exception>
+8000001c:	0040006f          	j	80000020 <handle_exception>
+
+80000020 <handle_exception>:
+80000020:	5391e193          	ori	gp,gp,1337
+
+80000024 <write_tohost>:
+80000024:	00001f17          	auipc	t5,0x1
+80000028:	fc3f2e23          	sw	gp,-36(t5) # 80001000 <tohost>
+8000002c:	ff9ff06f          	j	80000024 <write_tohost>
+
+80000030 <reset_vector>:
+80000030:	00000093          	li	ra,0
+80000034:	00000113          	li	sp,0
+80000038:	00000193          	li	gp,0
+8000003c:	00000213          	li	tp,0
+80000040:	00000293          	li	t0,0
+80000044:	00000313          	li	t1,0
+80000048:	00000393          	li	t2,0
+8000004c:	00000413          	li	s0,0
+80000050:	00000493          	li	s1,0
+80000054:	00000513          	li	a0,0
+80000058:	00000593          	li	a1,0
+8000005c:	00000613          	li	a2,0
+80000060:	00000693          	li	a3,0
+80000064:	00000713          	li	a4,0
+80000068:	00000793          	li	a5,0
+8000006c:	00000813          	li	a6,0
+80000070:	00000893          	li	a7,0
+80000074:	00000913          	li	s2,0
+80000078:	00000993          	li	s3,0
+8000007c:	00000a13          	li	s4,0
+80000080:	00000a93          	li	s5,0
+80000084:	00000b13          	li	s6,0
+80000088:	00000b93          	li	s7,0
+8000008c:	00000c13          	li	s8,0
+80000090:	00000c93          	li	s9,0
+80000094:	00000d13          	li	s10,0
+80000098:	00000d93          	li	s11,0
+8000009c:	00000e13          	li	t3,0
+800000a0:	00000e93          	li	t4,0
+800000a4:	00000f13          	li	t5,0
+800000a8:	00000f93          	li	t6,0
+800000ac:	f1402573          	csrr	a0,mhartid
+800000b0:	00051063          	bnez	a0,800000b0 <reset_vector+0x80>
+800000b4:	00000297          	auipc	t0,0x0
+800000b8:	01028293          	addi	t0,t0,16 # 800000c4 <reset_vector+0x94>
+800000bc:	30529073          	csrw	mtvec,t0
+800000c0:	18005073          	csrwi	satp,0
+800000c4:	00000297          	auipc	t0,0x0
+800000c8:	02428293          	addi	t0,t0,36 # 800000e8 <reset_vector+0xb8>
+800000cc:	30529073          	csrw	mtvec,t0
+800000d0:	800002b7          	lui	t0,0x80000
+800000d4:	fff28293          	addi	t0,t0,-1 # 7fffffff <_end+0xffffdfff>
+800000d8:	3b129073          	csrw	pmpaddr1,t0
+800000dc:	000022b7          	lui	t0,0x2
+800000e0:	f0028293          	addi	t0,t0,-256 # 1f00 <_start-0x7fffe100>
+800000e4:	3a029073          	csrw	pmpcfg0,t0
+800000e8:	00000297          	auipc	t0,0x0
+800000ec:	01828293          	addi	t0,t0,24 # 80000100 <reset_vector+0xd0>
+800000f0:	30529073          	csrw	mtvec,t0
+800000f4:	30205073          	csrwi	medeleg,0
+800000f8:	30305073          	csrwi	mideleg,0
+800000fc:	30405073          	csrwi	mie,0
+80000100:	00000193          	li	gp,0
+80000104:	00000297          	auipc	t0,0x0
+80000108:	f0028293          	addi	t0,t0,-256 # 80000004 <trap_vector>
+8000010c:	30529073          	csrw	mtvec,t0
+80000110:	00100513          	li	a0,1
+80000114:	01f51513          	slli	a0,a0,0x1f
+80000118:	00054663          	bltz	a0,80000124 <reset_vector+0xf4>
+8000011c:	00000513          	li	a0,0
+80000120:	0000006b          	.4byte	0x6b
+80000124:	00000293          	li	t0,0
+80000128:	00028c63          	beqz	t0,80000140 <reset_vector+0x110>
+8000012c:	10529073          	csrw	stvec,t0
+80000130:	0000b2b7          	lui	t0,0xb
+80000134:	10928293          	addi	t0,t0,265 # b109 <_start-0x7fff4ef7>
+80000138:	30229073          	csrw	medeleg,t0
+8000013c:	30202373          	csrr	t1,medeleg
+80000140:	30005073          	csrwi	mstatus,0
+80000144:	00000297          	auipc	t0,0x0
+80000148:	01428293          	addi	t0,t0,20 # 80000158 <reset_vector+0x128>
+8000014c:	34129073          	csrw	mepc,t0
+80000150:	f1402573          	csrr	a0,mhartid
+80000154:	30200073          	mret
+80000158:	00000513          	li	a0,0
+8000015c:	0000006b          	.4byte	0x6b
+80000160:	00000513          	li	a0,0
+80000164:	0000006b          	.4byte	0x6b
+	...
+
+Disassembly of section .tohost:
+
+80001000 <tohost>:
+	...
+
+80001040 <fromhost>:
+	...
+
+Disassembly of section .riscv.attributes:
+
+00000000 <.riscv.attributes>:
+   0:	3141                	.2byte	0x3141
+   2:	0000                	.2byte	0x0
+   4:	7200                	.2byte	0x7200
+   6:	7369                	.2byte	0x7369
+   8:	01007663          	bgeu	zero,a6,14 <_start-0x7fffffec>
+   c:	00000027          	.4byte	0x27
+  10:	7205                	.2byte	0x7205
+  12:	3376                	.2byte	0x3376
+  14:	6932                	.2byte	0x6932
+  16:	7032                	.2byte	0x7032
+  18:	5f30                	.2byte	0x5f30
+  1a:	326d                	.2byte	0x326d
+  1c:	3070                	.2byte	0x3070
+  1e:	615f 7032 5f30      	.byte	0x5f, 0x61, 0x32, 0x70, 0x30, 0x5f
+  24:	3266                	.2byte	0x3266
+  26:	3070                	.2byte	0x3070
+  28:	645f 7032 0030      	.byte	0x5f, 0x64, 0x32, 0x70, 0x30, 0x00
+  2e:	0108                	.2byte	0x108
+  30:	0b0a                	.2byte	0xb0a

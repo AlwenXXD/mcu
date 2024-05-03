@@ -19,7 +19,7 @@
 
 #define RAM_SIZE (1024 * 1024 * 16)
 static uint64_t ram[RAM_SIZE];
-//h8800_0000
+//h8400_0000
 #define FB_BASE (RAM_SIZE/2)
 
 extern "C" uint64_t ram_read_helper(uint8_t en, uint64_t rIdx)
@@ -42,23 +42,55 @@ extern "C" void ram_write_helper(uint64_t wIdx, uint64_t wdata, uint64_t wmask, 
 	}
 }
 
+void gray(int w, int h, int* matrix) {
+	int i, j;
+
+	for(i = 0; i < h; i++) {
+		for(j = 0; j < w; j++) {
+            uint32_t col = matrix[i * w + j];
+            uint32_t alpha = col & 0xFF000000;
+            uint32_t red = (col & 0x00FF0000) >> 16;
+            uint32_t green = (col & 0x0000FF00) >> 8;
+            uint32_t blue = (col & 0x000000FF);
+            uint32_t gray = (red + green + blue) / 3;
+            uint32_t newColor = gray;
+            matrix[i * w + j] = newColor;
+        }
+	}
+}
+
 static char *img_file = NULL;
 static bool trace_on = false;
+static bool sdl_on = false;
+static bool info_on = false;
+static bool preprocess_on = false;
 static int parse_args(int argc, char *argv[])
 {
 	const struct option table[] = {
 		{"help", no_argument, NULL, 'h'},
 		{"trace", no_argument, NULL, 't'},
+		{"sdl", no_argument, NULL, 's'},
+		{"info", no_argument, NULL, 'i'},
+		{"preprocess", no_argument, NULL, 'p'},
 		{0, 0, NULL, 0},
 	};
 	int o;
-	while ((o = getopt_long(argc, argv, "-ht", table, NULL)) != -1)
+	while ((o = getopt_long(argc, argv, "-htsip", table, NULL)) != -1)
 	{
 		switch (o)
 		{
 		case 't':
 			trace_on = true;
 			break;
+		case 's':
+        	sdl_on = true;
+        	break;
+		case 'i':
+        	info_on = true;
+        	break;
+		case 'p':
+        	preprocess_on = true;
+        	break;
 		case 1:
 			img_file = optarg;
 			return 0;
@@ -109,23 +141,51 @@ int main(int argc, char **argv, char **env)
 	bool quit = false;
     SDL_Event event;
  
-    SDL_Init(SDL_INIT_VIDEO);
-    IMG_Init(IMG_INIT_WEBP);
- 
-    SDL_Window * window = SDL_CreateWindow("image",
-        SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0);
-    SDL_Renderer * renderer = SDL_CreateRenderer(window, -1, 0);
-    SDL_Surface * image = SDL_LoadBMP("apple1.bmp");
-    SDL_Texture * texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, image->w, image->h);
-    uint32_t *pixels = (uint32_t *) image->pixels;
-	uint32_t *frame_buffer = (uint32_t *) &ram[FB_BASE];
-	uint32_t size = image->w * image->h;
-	for (size_t i = 0; i < size; i++)
-	{
-		frame_buffer[i] = pixels[i];
-	}
-	image->pixels = frame_buffer;
+	SDL_Window *window;
+	SDL_Renderer *renderer;
+	SDL_Surface *image;
+	SDL_Texture *texture;
+	uint32_t *pixels;
+	uint32_t *frame_buffer;
+	uint32_t size;
 
+	if (sdl_on)
+	{
+		SDL_Init(SDL_INIT_VIDEO);
+		IMG_Init(IMG_INIT_WEBP);
+		window = SDL_CreateWindow("image",
+								  SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0);
+		renderer = SDL_CreateRenderer(window, -1, 0);
+		image = SDL_LoadBMP("apple1.bmp");
+		SDL_Surface *originalImage = image;
+		image = SDL_ConvertSurfaceFormat(image, SDL_PIXELFORMAT_ARGB8888, 0);
+		SDL_FreeSurface(originalImage);
+		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, image->w, image->h);
+		pixels = (uint32_t *)image->pixels;
+		frame_buffer = (uint32_t *)&ram[FB_BASE];
+		size = image->w * image->h;
+		if(preprocess_on){
+			for (int i = 0; i < image->h; i++)
+			{
+				for (int j = 0; j < image->w; j++)
+				{
+					uint32_t col = pixels[i * image->w + j];
+					uint32_t alpha = col & 0xFF000000;
+					uint32_t red = (col & 0x00FF0000) >> 16;
+					uint32_t green = (col & 0x0000FF00) >> 8;
+					uint32_t blue = (col & 0x000000FF);
+					uint32_t gray = (red + green + blue) / 3;
+					uint32_t newColor = gray;
+					pixels[i * image->w + j] = newColor;
+				}
+			}
+		}
+		for (size_t i = 0; i < size; i++)
+		{
+			frame_buffer[i] = pixels[i];
+		}
+		image->pixels = frame_buffer;
+	}
 	// start simulation
 	for (int i = 0; i < 100; i++)
 	{
@@ -137,8 +197,8 @@ int main(int argc, char **argv, char **env)
 	}
 	dut->reset = 0;
 	uint64_t cycles = 0;
-	int update_fb = 0;
-	while (!contextp->gotFinish())
+	uint64_t update_fb = 0;
+	while (!contextp->gotFinish() && !quit)
 	{
 		update_fb++;
 		dut->clock = 0;
@@ -171,13 +231,23 @@ int main(int argc, char **argv, char **env)
 			state = 1;
 			break;
 		}
-		if (update_fb >= 500)
+		if (sdl_on && update_fb >= 1000000)
 		{
+		        SDL_PollEvent(&event);
+        		switch (event.type)
+        		{
+           		 case SDL_QUIT:
+               		 quit = true;
+               		 break;
+        		}
 			SDL_UpdateTexture(texture, NULL, image->pixels, image->w * sizeof(Uint32));
 			SDL_RenderCopy(renderer, texture, NULL, NULL);
 			SDL_RenderPresent(renderer);
 			update_fb = 0;
 		}
+	}
+	if(info_on){
+		printf("Total %lu cycles used.\n",cycles);
 	}
 
 	if (trace_on)
@@ -185,12 +255,15 @@ int main(int argc, char **argv, char **env)
 	delete dut;
 	delete contextp;
 
-	SDL_DestroyTexture(texture);
-    SDL_FreeSurface(image);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
+	if (sdl_on)
+	{
+		SDL_DestroyTexture(texture);
+		SDL_FreeSurface(image);
+		SDL_DestroyRenderer(renderer);
+		SDL_DestroyWindow(window);
 
-    IMG_Quit();
-    SDL_Quit();
+		IMG_Quit();
+		SDL_Quit();
+	}
 	return state;
 }

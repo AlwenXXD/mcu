@@ -137,17 +137,15 @@ class Lsu extends Module {
   io.core_rw.req.bits.is_write := is_st
   io.core_rw.req.bits.byte_mask := byte_mask
 
-  val is_st_to_wb = is_st
-  BoringUtils.addSource(is_st_to_wb,"is_st")
 
 
-//TODO ld/st address misaligned exception
   wb_info.data := gen_load_data(data_read,mem_addr,dispatch_info.uop)
   wb_info.inst_addr := dispatch_info.inst_addr
   wb_info.inst:=dispatch_info.inst
   wb_info.des_addr := dispatch_info.des_addr
   wb_info.except_type:= Mux(dispatch_info.except_type === ExceptSel.is_null,except_type,dispatch_info.except_type)
   wb_info.mem_addr:=mem_addr
+  wb_info.atomic := true.B
   wb_info_valid := complete
 
   io.dispatch_info.ready := complete || !dispatch_valid

@@ -12,17 +12,19 @@ class SimTop extends Module {
   })
 
   val core = Module(new Core)
-  val arbiter_core= Module(new CoreArbiter2to2)
+  val arbiter_core= Module(new CoreArbiter2to3)
   val clint = Module(new Clint)
+  val sobel = Module(new Sobel)
   val ram = Module(new Ram)
   core.io.drw<>arbiter_core.io.core_master(1)
   core.io.irw<>arbiter_core.io.core_master(0)
   core.io.instr_info.intr_t<>clint.io.intr_t
-  core.io.instr_info.intr_e<>io.intr_e
+  core.io.instr_info.intr_e<>sobel.io.intr_e
 
 
   ram.io.bus <> arbiter_core.io.core_slave(0)
   clint.io.bus <> arbiter_core.io.core_slave(1)
+  sobel.io.bus <> arbiter_core.io.core_slave(2)
 
   val is_halt = WireInit(false.B)
   BoringUtils.addSink(is_halt, "is_halt")
